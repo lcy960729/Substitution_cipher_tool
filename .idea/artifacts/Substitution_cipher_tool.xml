@@ -1,0 +1,20 @@
+<component name="ArtifactManager">
+  <artifact type="javafx" name="Substitution_cipher_tool">
+    <output-path>$PROJECT_DIR$/out/artifacts/Substitution_cipher_tool</output-path>
+    <properties id="javafx-properties">
+      <options>
+        <option name="appClass" value="hw.Main" />
+        <option name="description" value="" />
+        <option name="htmlPlaceholderId" value="" />
+        <option name="title" value="substitution cipher tool" />
+        <option name="vendor" value="" />
+        <option name="version" value="" />
+      </options>
+    </properties>
+    <root id="root">
+      <element id="archive" name="Substitution_cipher_tool.jar">
+        <element id="module-output" name="Substitution_cipher_tool" />
+      </element>
+    </root>
+  </artifact>
+</component>
