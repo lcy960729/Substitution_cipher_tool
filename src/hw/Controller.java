@@ -14,6 +14,7 @@ import javafx.scene.paint.Color;
 
 import java.net.URL;
 import java.util.*;
+import java.util.function.Predicate;
 
 
 public class Controller implements Initializable {
@@ -24,7 +25,7 @@ public class Controller implements Initializable {
     @FXML
     private TableView<Word> word_tableView;
     @FXML
-    private TableColumn<Word, String> wc_1, wc_2;
+    private TableColumn<Word, String> wc_1, wc_2, wc_3;
     private ObservableList<Word> wordList;
     private FilteredList<Word> wordFilteredList;
 
@@ -32,7 +33,7 @@ public class Controller implements Initializable {
     private TextArea cipher_textArea, plain_textArea;
 
     @FXML
-    private TextField filter_tf;
+    private TextField filterWordLength_tf, filterPlainWord_tf;
 
     private Hashtable<Character, String> key_table;
     private Hashtable<String, Integer> frequency_words_table;
@@ -58,7 +59,7 @@ public class Controller implements Initializable {
         print_sorted_KeyTable();
     }
 
-    private void insert_correct_answer_key_at_textField(){
+    private void insert_correct_answer_key_at_textField() {
         String correct_Answer_key = "etsniarochmypgdulbkfwvx";
 
         for (int i = 0; i < correct_Answer_key.length(); i++) {
@@ -66,7 +67,7 @@ public class Controller implements Initializable {
         }
     }
 
-    private void print_sorted_KeyTable(){
+    private void print_sorted_KeyTable() {
         Iterator<Character> iterator = key_table.keySet().stream().sorted(new Comparator<Character>() {
             @Override
             public int compare(Character o1, Character o2) {
@@ -75,7 +76,7 @@ public class Controller implements Initializable {
         }).iterator();
 
 
-        while(iterator.hasNext()){
+        while (iterator.hasNext()) {
             char key = iterator.next();
             System.out.println(key + " : " + key_table.get(key));
         }
@@ -90,6 +91,22 @@ public class Controller implements Initializable {
         }
 
         plain_textArea.setText(String.valueOf(plainText_chrArray));
+    }
+
+    private void decryption_word() {
+        wordList.forEach(word -> {
+            char[] plainText_word = word.getWord_name().toCharArray();
+
+            for (int i = 0; i < plainText_word.length; i++) {
+                if (key_table.containsKey(plainText_word[i]))
+                    plainText_word[i] = key_table.get(plainText_word[i]).charAt(0);
+                else
+                    plainText_word[i] ='_';
+            }
+
+            word.setPlain_word(String.valueOf(plainText_word));
+        });
+        word_tableView.refresh();
     }
 
     private void init_layout() {
@@ -124,23 +141,23 @@ public class Controller implements Initializable {
             textFields[i].textProperty().addListener(new ChangeListener<String>() {
                 @Override
                 public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                    char alphabet_Index = alphabet_labels[index].getText().charAt(0);
+                    char key = alphabet_labels[index].getText().charAt(0);
 
-                    String key;
+                    String value = newValue;
+
                     if (newValue.equals("")) {
-                        key = String.valueOf(alphabet_Index);
+                        key_table.remove(key);
                     } else {
-                        key = newValue;
+                        if (key_table.containsValue(value)) {
+                            textFields[index].setStyle("-fx-text-fill: white; -fx-background-color: red;");
+                        } else {
+                            textFields[index].setStyle("-fx-text-fill: black;");
+                        }
+                        key_table.put(key, value);
                     }
 
-                    if (key_table.containsValue(key) && !key.equals("")) {
-                        textFields[index].setStyle("-fx-text-fill: white; -fx-background-color: red;");
-                    }else{
-                        textFields[index].setStyle("-fx-text-fill: black;");
-                    }
-
-                    key_table.put(alphabet_Index, key);
                     decryption();
+                    decryption_word();
                 }
             });
         }
@@ -154,6 +171,7 @@ public class Controller implements Initializable {
     private void init_tableView() {
         wc_1.setCellValueFactory(new PropertyValueFactory<>("word_name"));
         wc_2.setCellValueFactory(new PropertyValueFactory<>("count"));
+        wc_3.setCellValueFactory(new PropertyValueFactory<>("plain_word"));
 
         wordList = word_tableView.getItems();
     }
@@ -173,31 +191,56 @@ public class Controller implements Initializable {
         });
     }
 
-    private void init_textFiled(){
-        filter_tf.textProperty().addListener(new ChangeListener<String>() {
+    private void init_textFiled() {
+        filterWordLength_tf.textProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                if (newValue.equals("")){
-                    word_tableView.setItems(wordList);
-                    return;
-                }
-
                 if (!newValue.matches("\\d*")) {
-                    filter_tf.setText(newValue.replaceAll("[^\\d]", ""));
+                    filterWordLength_tf.setText(newValue.replaceAll("[^\\d]", ""));
                     return;
                 }
 
-                wordFilteredList.setPredicate(word -> {
-                    if (word.word_name.length() == Integer.parseInt(newValue))
-                        return true;
-                    else
-                        return false;
-                });
+                wordFilteredList.setPredicate(filterByWordLength.and(filterByContainsWord));
+
+                word_tableView.setItems(wordFilteredList);
+            }
+        });
+
+        filterPlainWord_tf.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                wordFilteredList.setPredicate(filterByWordLength.and(filterByContainsWord));
 
                 word_tableView.setItems(wordFilteredList);
             }
         });
     }
+
+    Predicate<Word> filterByWordLength = new Predicate<Word>() {
+        @Override
+        public boolean test(Word word) {
+            if (filterWordLength_tf.getText().equals(""))
+                return true;
+
+            if (word.getWord_name().length() == Integer.parseInt(filterWordLength_tf.getText()))
+                return true;
+            else
+                return false;
+        }
+    };
+
+    Predicate<Word> filterByContainsWord = new Predicate<Word>() {
+        @Override
+        public boolean test(Word word) {
+            if (filterPlainWord_tf.getText().equals(""))
+                return true;
+
+            if (word.getPlain_word().contains(filterPlainWord_tf.getText()))
+                return true;
+            else
+                return false;
+        }
+    };
 
     private void set_labelsText() {
         for (int i = 0; i < 26; i++) {
