@@ -1,6 +1,7 @@
 # Substitution_cipher_tool
 Substitution cipher tool - Gui program (javaFx)
-치환 암호 해석 프로그램  
+치환 암호 해석을 도와주는 프로그램  
+단어와 알파벳의 빈도수를 제공해주고 지정한 알파펫을 다른 알파벳으로 치환하면 암호문에서 해당 알파벳의 치환 결과를 보여준다. 
 ![프로그램](https://user-images.githubusercontent.com/58020519/106418507-d0282d80-6499-11eb-9b74-295e0c3869fb.png)
 
 ## 평문을 찾는 방법
