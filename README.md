@@ -1,5 +1,6 @@
 # Substitution_cipher_tool
 Substitution cipher tool - Gui program (javaFx)
+치환 암호 해석 프로그램  
 ![프로그램](https://user-images.githubusercontent.com/58020519/106418507-d0282d80-6499-11eb-9b74-295e0c3869fb.png)
 
 ## 평문을 찾는 방법
